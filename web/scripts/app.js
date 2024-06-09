@@ -1795,6 +1795,65 @@ export class ComfyApp {
 		});
 	}
 
+
+
+
+	async callOllama(model, instructions) {
+		const ollamaEndpoint = "https://researcha104.tri3d.in/extract_embeddings";
+		const response = await fetch(ollamaEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: model,
+                prompt: instructions, 
+				stream: false,
+            })
+        });
+		try {
+			const result = await response.json();
+			return result['response'];
+		}
+		catch (error) {
+			console.error(error);
+		}
+		
+	}
+
+
+	async editWorkflow(instructions,button)	{
+		button.textContent = "Editing...";
+		const workflow_current = this.graph.serialize();
+		const linksJSON = JSON.stringify(workflow_current.links);
+		const nodesJSON = JSON.stringify(workflow_current.nodes);
+		console.log("Initial Nodes", nodesJSON);
+
+		const llama_prompt = `
+		this is the nodeJSON 
+		-----------------
+		${nodesJSON}
+		-----------------
+
+		I want you to follow these instructions - ${instructions}
+
+		-----------------
+		Now give me back the modified nodeJSON in the text and nothing else , so that the output you give me I will convert it back to dictioanry and load it back to the graph
+		No extra text, just the modified nodeJSON
+
+		Don't change pos, size, id , order, type for a node.
+		`;
+
+		const output = await this.callOllama("llama3:70b", llama_prompt);
+		console.log('Output:', output);
+		//convert the output to dictionary and load it back to the graph
+		const modified_nodes = JSON.parse(output);
+		console.log('Modified Nodes:', modified_nodes);
+		workflow_current.nodes = modified_nodes;
+		this.loadGraphData(workflow_current);
+		button.textContent = "Edit Workflow";
+	}
+
 	/**
 	 * Populates the graph with the specified workflow data
 	 * @param {*} graphData A serialized graph object

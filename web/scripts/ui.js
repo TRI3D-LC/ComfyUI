@@ -614,6 +614,27 @@ export class ComfyUI {
 					app.resetView();
 				}
 			}),
+			$el("button", {
+                id: "edit-workflow-button",
+                textContent: "Edit Workflow",
+                onclick: () => {
+                    const instructions = document.getElementById('instructions-textbox').value;
+					const edit_workflow_button = document.getElementById('edit-workflow-button');
+                    app.editWorkflow(instructions,edit_workflow_button); // Call the app's editWorkflow function with the instructions
+                }
+            }),
+           
+			
+			$el("textarea", {
+				id: "instructions-textbox",
+				placeholder: "Enter your instructions here",
+				// defaultValue: "change image latent width and height to 256",
+				style: {
+					width: "100%",
+					height: "100px",
+					marginTop: "10px"
+				},
+			}),
 		]);
 
 		const devMode = this.settings.addSetting({
